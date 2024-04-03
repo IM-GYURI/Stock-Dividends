@@ -24,12 +24,12 @@ public class ScraperScheduler {
 
     @Scheduled(cron = "0 0 0 * * *")    // 매일 정각에 실행
     public void yahooFinanceScehduling() {
-        log.info("scraping scheduler is started");
         // 저장된 회사 목록 조회
         List<CompanyEntity> companies = this.companyRepository.findAll();
 
         // 회사마다 배당금 정보를 새로 스크래핑
         for (var company : companies) {
+            log.info("scraping scheduler is started -> " + company.getName());
             ScrapedResult scrapedResult = this.yahooFinanceScraper.scrap(Company.builder()
                                                     .name(company.getName())
                                                     .ticker(company.getTicker())
