@@ -5,16 +5,21 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import zerobase.stockdividends.model.Dividend;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity(name = "DIVIDEND")
 @Getter
 @ToString
 @NoArgsConstructor
+// 중복 데이터 저장 방지 제약조건 : 단일 컬럼 / 복합 컬럼 지정 가능
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        columnNames = { "companyId", "date" }
+                )
+        }
+)
 public class DividendEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
