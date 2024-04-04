@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import zerobase.stockdividends.model.Company;
 import zerobase.stockdividends.model.Dividend;
 import zerobase.stockdividends.model.ScrapedResult;
+import zerobase.stockdividends.model.constants.CacheKey;
 import zerobase.stockdividends.persist.CompanyRepository;
 import zerobase.stockdividends.persist.DividendRepository;
 import zerobase.stockdividends.persist.entity.CompanyEntity;
@@ -26,7 +27,7 @@ public class FinanceService {
     // 요청이 자주 들어오는가? -> 특정 데이터에 대한 요청이 몰릴 것 (Google, Apple 등) -> 그런 회사들의 배당금 정보를 캐싱해놓으면 좋을 듯
     // 자주 변경되는 데이터인가? -> 변경이 잦지 않음 (연 1회, 분기당 1회, 월 1회...)
     // ->> 캐싱 대상 적합
-    @Cacheable(key = "#companyName", value = "finance")
+    @Cacheable(key = "#companyName", value = CacheKey.KEY_FINANCE)
     public ScrapedResult getDividendByCompanyName(String companyName) {
         log.info("search company -> " + companyName);
         // 회사명을 기준으로 회사 정보 조회
