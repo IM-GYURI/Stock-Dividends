@@ -1,11 +1,13 @@
 package zerobase.stockdividends.scraper;
 
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
+import zerobase.stockdividends.exception.impl.UnexpectedMonthException;
 import zerobase.stockdividends.model.Company;
 import zerobase.stockdividends.model.Dividend;
 import zerobase.stockdividends.model.ScrapedResult;
@@ -16,11 +18,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Component
 public class YahooFinanceScraper implements Scraper {
     private static final String STATISTICS_URL = "https://finance.yahoo.com/quote/%s/history?period1=%d&period2=%d&interval=1mo";
     private static final String SUMMARY_URL = "https://finance.yahoo.com/quote/%s?p=%s";
-    private static final long START_TIME = 86400;   // 60 * 60 * 24
+    private static final long START_TIME = 86400;
 
     @Override
     public ScrapedResult scrap(Company company) {
@@ -28,16 +31,16 @@ public class YahooFinanceScraper implements Scraper {
         scrapResult.setCompany(company);
 
         try {
-            long end = System.currentTimeMillis() / 1000;   // 초단위로 바꾸기 위해 1000으로 나눔
+            long end = System.currentTimeMillis() / 1000;
 
             String url = String.format(STATISTICS_URL, company.getTicker(),START_TIME, end);
             Connection connection = Jsoup.connect(url);
             Document document = connection.get();
 
             Elements parsingDivs = document.getElementsByAttributeValue("data-test", "historical-prices");
-            Element tableEle = parsingDivs.get(0);  // table 전체
+            Element tableEle = parsingDivs.get(0);
 
-            Element tbody = tableEle.children().get(1);  // thead = 0, tbody = 1, tfoot = 2
+            Element tbody = tableEle.children().get(1);
 
             List<Dividend> dividends = new ArrayList<>();
             for (Element e : tbody.children()) {
@@ -54,12 +57,13 @@ public class YahooFinanceScraper implements Scraper {
                 String dividend = splits[3];
 
                 if (month < 0) {
-                    throw new RuntimeException("Unexpected Month enum value -> " + splits[0]);
+                    throw new UnexpectedMonthException();
                 }
 
                 dividends.add(new Dividend(LocalDateTime.of(year, month, day, 0, 0), dividend));
             }
             scrapResult.setDividends(dividends);
+            log.info("scrap company's dividends -> " + company.getTicker());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -75,6 +79,7 @@ public class YahooFinanceScraper implements Scraper {
             Document document = Jsoup.connect(url).get();
             Element titleEle = document.getElementsByTag("h1").get(0);
             String title = titleEle.text().split(" - ")[1].trim();
+            log.info("scrap company by ticker -> " + ticker);
 
             return new Company(ticker, title);
         } catch (IOException e) {

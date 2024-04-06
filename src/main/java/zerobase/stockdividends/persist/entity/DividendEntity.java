@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @Getter
 @ToString
 @NoArgsConstructor
-// 중복 데이터 저장 방지 제약조건 : 단일 컬럼 / 복합 컬럼 지정 가능
 @Table(
         uniqueConstraints = {
                 @UniqueConstraint(

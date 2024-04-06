@@ -5,6 +5,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -16,6 +17,7 @@ import zerobase.stockdividends.service.MemberService;
 import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TokenProvider {
@@ -38,6 +40,8 @@ public class TokenProvider {
 
         var now = new Date();
         var expiredDate = new Date(now.getTime() + TOKEN_EXPIRE_TIME);
+
+        log.info("generate token by username -> " + username);
 
         return Jwts.builder()
                 .setClaims(claims)

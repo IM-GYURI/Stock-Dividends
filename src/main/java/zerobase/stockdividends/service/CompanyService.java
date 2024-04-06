@@ -7,6 +7,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import zerobase.stockdividends.exception.impl.AlreadyExistTickerException;
+import zerobase.stockdividends.exception.impl.FailedToScrapTickerException;
 import zerobase.stockdividends.exception.impl.NoCompanyException;
 import zerobase.stockdividends.model.Company;
 import zerobase.stockdividends.model.ScrapedResult;
@@ -32,7 +34,7 @@ public class CompanyService {
         boolean exists = this.companyRepository.existsByTicker(ticker);
 
         if (exists) {
-            throw new RuntimeException("already exists ticker -> " + ticker);
+            throw new AlreadyExistTickerException();
         }
 
         return this.storeCompanyAndDividend(ticker);
@@ -43,17 +45,14 @@ public class CompanyService {
     }
 
     private Company storeCompanyAndDividend(String ticker) {
-        // ticker를 기준으로 회사를 스크래핑
         Company company = this.yahooFinanceScraper.scrapCompanyByTicker(ticker);
 
         if (ObjectUtils.isEmpty(company)) {
-            throw new RuntimeException("failed to scrap ticker -> " + ticker);
+            throw new FailedToScrapTickerException();
         }
 
-        // 해당 회사가 존재할 경우, 회사의 배당금 정보를 스크래핑
         ScrapedResult scrapedResult = this.yahooFinanceScraper.scrap(company);
 
-        // 스크래핑 결과
         CompanyEntity companyEntity = this.companyRepository.save(new CompanyEntity(company));
         System.out.println(companyEntity.getId());
         List<DividendEntity> dividendEntityList = scrapedResult.getDividends().stream()
@@ -91,7 +90,7 @@ public class CompanyService {
 
         this.dividendRepository.deleteAllByCompanyId(company.getId());
         this.companyRepository.delete(company);
-        this.deleteAutoCompleteKeyword(company.getName());  // trie 데이터 지우기
+        this.deleteAutoCompleteKeyword(company.getName());
 
         return company.getName();
     }
