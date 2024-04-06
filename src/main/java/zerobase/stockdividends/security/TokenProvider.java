@@ -22,18 +22,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TokenProvider {
 
-    private static final long TOKEN_EXPIRE_TIME = 1000 * 60 * 60;   // 1h
+    private static final long TOKEN_EXPIRE_TIME = 1000 * 60 * 60;
     private static final String KEY_ROLES = "roles";
     @Value("{spring.jwt.secret}")
     private String secretKey;
     private final MemberService memberService;
 
-    /**
-     * 토근 생성(발급)
-     * @param username
-     * @param roles
-     * @return
-     */
     public String generateToken(String username, List<String> roles) {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put(KEY_ROLES, roles);
@@ -47,7 +41,7 @@ public class TokenProvider {
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(expiredDate)
-                .signWith(SignatureAlgorithm.HS512, this.secretKey) // 사용할 암호화 알고리즘, 비밀키
+                .signWith(SignatureAlgorithm.HS512, this.secretKey)
                 .compact();
     }
 

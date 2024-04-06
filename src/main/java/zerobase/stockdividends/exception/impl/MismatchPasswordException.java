@@ -11,6 +11,6 @@ public class MismatchPasswordException extends AbstractException {
 
     @Override
     public String getMessage() {
-        return "비밀번호가 일치하지 않습니다.";
+        return "잘못된 비밀번호입니다.";
     }
 }
